@@ -4,14 +4,8 @@
   "description": "키로 — URL/문서 AI 자동 정리 MVP",
   "type": "module",
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
-  "scripts": {
-    "dev": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.94.0"
