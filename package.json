@@ -1,23 +1,19 @@
 {
-  "name": "my_first_app",
+  "name": "kiro",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "키로 — URL/문서 AI 자동 정리 MVP",
+  "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
-    "start": "node server.js",
-    "chat": "node chat1.js",
+    "dev": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.94.0",
-    "dotenv": "^17.4.2",
-    "formidable": "^3.5.4",
-    "mammoth": "^1.12.0",
-    "pdf-parse": "^2.4.5",
-    "xlsx": "^0.18.5"
+    "@anthropic-ai/sdk": "^0.94.0"
   }
 }

@@ -115,7 +115,8 @@ button,input,textarea{font-family:inherit;color:inherit}
 }
 .composer-actions .spacer{flex:1}
 .attach-btn{
-  display:inline-flex;align-items:center;gap:6px;
+  display:none; /* 서버리스 환경에서 파일 업로드는 별도 작업 예정 — 임시 비활성화 */
+  align-items:center;gap:6px;
   padding:8px 14px;border:none;
   background:var(--surface);color:var(--text-2);
   border-radius:100px;cursor:pointer;

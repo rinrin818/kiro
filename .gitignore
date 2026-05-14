@@ -37,3 +37,6 @@ chat1.js
 hello.js
 cosmetique.jpg
 grand-budapest.jpg
+
+# 옛 로컬 dev 서버 (Vercel 배포본은 api/ 사용)
+server.js
