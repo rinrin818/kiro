@@ -1,0 +1,39 @@
+# 환경 변수 (API 키 포함)
+.env
+.env.local
+.env.*.local
+
+# 의존성
+node_modules/
+
+# 업로드된 파일 (사용자 데이터)
+uploads/
+
+# 로그
+*.log
+npm-debug.log*
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# 빌드 결과
+dist/
+build/
+
+# 임시 파일
+*.tmp
+*.swp
+
+# Claude Code 메타데이터
+.claude/
+
+# 키로 본체와 무관한 파일 (로컬 보관용)
+chat.html
+chat.js
+chat1.js
+hello.js
+cosmetique.jpg
+grand-budapest.jpg
