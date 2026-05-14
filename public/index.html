@@ -1188,5 +1188,11 @@ $libSearch.addEventListener("input", () => { libFilter.q = $libSearch.value.trim
 $libTagReset.onclick = () => { libFilter.tags.clear(); renderLibrary(); };
 </script>
 
+<!-- Vercel Web Analytics (정적 사이트용) -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+
 </body>
 </html>
