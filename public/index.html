@@ -749,7 +749,7 @@ button,input,textarea{font-family:inherit;color:inherit}
   <div class="modal">
     <div class="mp-title">새 자료 추가</div>
     <div class="composer" id="addComposer">
-      <textarea id="addInput" placeholder="링크를 입력하거나 문서를 끌어다 놓으세요.&#10;여러 개는 줄바꿈으로 구분해요."></textarea>
+      <textarea id="addInput" placeholder="링크를 입력하거나 문서를 끌어다 놓으세요."></textarea>
       <div class="composer-actions">
         <button type="button" id="addAttachBtn" class="attach-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
@@ -957,7 +957,14 @@ function renderFileChip() {
     $fileInput.value = "";
     renderFileChip();
     updateGoButton();
+    syncMainMemoOpen();
   });
+}
+
+// 메인 — 링크나 파일이 있으면 메모 열림, 둘 다 비면 닫힘
+function syncMainMemoOpen() {
+  if ($input.value.trim() || attachedFile) $memoWrap.classList.add("open");
+  else $memoWrap.classList.remove("open");
 }
 
 $attachBtn.onclick = () => $fileInput.click();
@@ -980,6 +987,7 @@ function setAttachedFile(file) {
   attachedFile = file;
   renderFileChip();
   updateGoButton();
+  syncMainMemoOpen();
 }
 
 const $memoToggle = $("memoToggle"), $memoWrap = $("memoWrap");
@@ -1029,9 +1037,7 @@ $input.addEventListener("input", () => {
   $count.textContent = len;
   $count.parentElement.classList.toggle("over", len > MAX_LENGTH);
   updateGoButton();
-  // 링크 입력 시 메모 영역 자동 표시, 모두 지우면 자동으로 닫힘
-  if ($input.value.trim()) $memoWrap.classList.add("open");
-  else $memoWrap.classList.remove("open");
+  syncMainMemoOpen();
 });
 
 function getDomain(url) {
@@ -2043,6 +2049,7 @@ function renderAddFileChip() {
     addAttachedFile = null;
     $("addFileInput").value = "";
     renderAddFileChip();
+    syncModalMemoOpen();
   });
 }
 function setAddAttachedFile(file) {
@@ -2052,6 +2059,13 @@ function setAddAttachedFile(file) {
   if (file.size > MAX_FILE_MB * 1024 * 1024) { showToast(`${MAX_FILE_MB}MB 이하 파일만 올릴 수 있어요`); return; }
   addAttachedFile = file;
   renderAddFileChip();
+  syncModalMemoOpen();
+}
+
+// 모달 — 링크나 파일이 있으면 메모 열림, 둘 다 비면 닫힘
+function syncModalMemoOpen() {
+  if ($addInput.value.trim() || addAttachedFile) $addMemoWrap.classList.add("open");
+  else $addMemoWrap.classList.remove("open");
 }
 $("addAttachBtn").onclick = () => $("addFileInput").click();
 $("addFileInput").addEventListener("change", () => setAddAttachedFile($("addFileInput").files?.[0]));
@@ -2079,10 +2093,7 @@ $addMemoToggle.onclick = () => {
   if (open) setTimeout(() => $addMemo.focus(), 0);
 };
 // 링크 입력 시 메모 영역 자동 표시, 모두 지우면 닫힘
-$addInput.addEventListener("input", () => {
-  if ($addInput.value.trim()) $addMemoWrap.classList.add("open");
-  else $addMemoWrap.classList.remove("open");
-});
+$addInput.addEventListener("input", syncModalMemoOpen);
 
 function openAddModal() {
   $addInput.value = "";
