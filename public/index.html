@@ -96,32 +96,58 @@ button,input,textarea{font-family:inherit;color:inherit}
   margin-top:8px;line-height:1.6;letter-spacing:-.2px;
 }
 
+/* ── 폴더 화면 메뉴 (미트볼) ───────────────────────── */
+#folder{position:relative}
+.folder-menu{
+  position:absolute;top:50px;right:12px;
+  background:var(--surface);border-radius:12px;
+  box-shadow:0 6px 20px rgba(25,31,40,.14);
+  padding:6px;z-index:35;min-width:130px;display:none;
+}
+.folder-menu.open{display:block}
+.folder-menu button{
+  display:block;width:100%;text-align:left;
+  background:none;border:none;cursor:pointer;
+  padding:10px 12px;border-radius:8px;
+  font-family:inherit;font-size:14px;font-weight:600;color:var(--text);
+  letter-spacing:-.2px;
+}
+.folder-menu button:hover{background:var(--surface-1)}
+.folder-menu button.danger{color:var(--danger)}
+.folder-menu button.danger:hover{background:var(--danger-soft)}
+
 /* ── 컴포저 (URL + 첨부) ────────────────────────────── */
 .composer{
   background:var(--surface-1);
   border-radius:18px;
   padding:18px 18px 14px;
-  transition:background .15s;
+  transition:background .15s,box-shadow .15s;
 }
 .composer:focus-within{background:var(--surface-2)}
-#input{
+.composer.dragover{
+  background:var(--primary-soft);
+  box-shadow:inset 0 0 0 2px var(--primary);
+}
+.composer textarea{
   width:100%;border:none;outline:none;resize:none;
   background:transparent;color:var(--text);
+  font-family:inherit;
   font-size:16px;line-height:1.55;letter-spacing:-.2px;
   min-height:80px;
 }
-#input::placeholder{color:var(--text-4)}
+.composer textarea::placeholder{color:var(--text-4)}
 .composer-actions{
   display:flex;align-items:center;gap:8px;
   margin-top:8px;flex-wrap:wrap;
 }
 .composer-actions .spacer{flex:1}
 .attach-btn{
-  display:none; /* 서버리스 환경에서 파일 업로드는 별도 작업 예정 — 임시 비활성화 */
+  display:inline-flex;
   align-items:center;gap:6px;
   padding:8px 14px;border:none;
   background:var(--surface);color:var(--text-2);
   border-radius:100px;cursor:pointer;
+  font-family:inherit;
   font-size:13px;font-weight:600;
   transition:.12s;
 }
@@ -156,9 +182,10 @@ button,input,textarea{font-family:inherit;color:inherit}
 .memo-toggle:hover{color:var(--primary-hover)}
 .memo-wrap{margin-top:6px;display:none}
 .memo-wrap.open{display:block}
-#memo{
+.memo-wrap textarea{
   width:100%;
   padding:14px 16px;
+  font-family:inherit;
   font-size:15px;line-height:1.55;letter-spacing:-.2px;
   border:none;outline:none;resize:none;
   background:var(--surface-1);
@@ -166,8 +193,8 @@ button,input,textarea{font-family:inherit;color:inherit}
   color:var(--text);
   transition:.15s;
 }
-#memo:focus{background:var(--surface-2)}
-#memo::placeholder{color:var(--text-4)}
+.memo-wrap textarea:focus{background:var(--surface-2)}
+.memo-wrap textarea::placeholder{color:var(--text-4)}
 
 /* ── 버튼 ──────────────────────────────────────────── */
 .btn{
@@ -191,7 +218,8 @@ button,input,textarea{font-family:inherit;color:inherit}
 
 /* ── 에러 / 로딩 ──────────────────────────────────── */
 .error{margin-top:16px;padding:16px;background:var(--danger-soft);border-radius:14px;color:var(--danger);font-size:14px;line-height:1.55}
-.error-msg{margin-bottom:12px;font-weight:500}
+.error-msg{font-weight:600;margin-bottom:4px}
+.error-detail{font-size:12.5px;color:var(--text-3);margin-bottom:12px;word-break:break-word}
 .btn-retry{
   padding:9px 16px;font-size:13px;font-weight:600;
   background:var(--surface);color:var(--danger);
@@ -215,9 +243,33 @@ button,input,textarea{font-family:inherit;color:inherit}
   background:var(--surface-1);
   border-radius:16px;
   transition:background .12s;
+  display:flex;
+  gap:14px;
 }
 .card:hover{background:var(--surface-2)}
-.card-link{display:block;text-decoration:none;color:inherit;padding-right:64px}
+.card-icon-wrap{
+  width:40px;height:40px;
+  border-radius:10px;
+  background:var(--surface);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  margin-top:2px;
+  position:relative;
+  overflow:hidden;
+}
+.card-icon-wrap img{width:24px;height:24px;border-radius:4px;object-fit:contain}
+.card-icon-wrap.fallback{
+  background:var(--brand,#9aa5b1);
+  color:#fff;
+}
+.card-icon-wrap.fallback::before{
+  content:attr(data-initial);
+  font-size:18px;font-weight:800;line-height:1;letter-spacing:-.5px;
+}
+.card-icon-wrap.file{background:var(--surface-2);color:var(--text-3)}
+.card-icon-wrap.file::before{content:"📄";font-size:20px;line-height:1}
+.card-content{flex:1;min-width:0;padding-right:60px}
+.card-link{display:block;text-decoration:none;color:inherit}
 .card-title{
   font-size:16px;font-weight:700;color:var(--text);
   line-height:1.4;letter-spacing:-.3px;
@@ -225,11 +277,12 @@ button,input,textarea{font-family:inherit;color:inherit}
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
 }
 .card-desc{font-size:14px;color:var(--text-2);line-height:1.55;margin-bottom:10px;word-break:break-word}
-.card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.tag{font-size:12px;color:var(--primary);background:var(--primary-soft);padding:4px 10px;border-radius:100px;font-weight:600;letter-spacing:-.1px}
-.card-meta{font-size:12px;color:var(--text-4);font-weight:500;display:flex;align-items:center;gap:8px}
-.card-site{padding:3px 8px;background:var(--surface);border-radius:6px;font-size:11px;color:var(--text-3);font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cat-badge{display:inline-block;font-size:11px;color:var(--primary);background:var(--primary-soft);padding:3px 8px;border-radius:6px;font-weight:700;margin-bottom:8px;letter-spacing:-.1px}
+.card-tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:12px;color:var(--text-2);background:var(--surface-3);padding:4px 10px;border-radius:100px;font-weight:600;letter-spacing:-.1px}
+
+/* 카드 상단 행 (카테고리 + 날짜) */
+.card-top-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.card-date{font-size:12px;color:var(--text-4);font-weight:500;flex-shrink:0}
 
 /* 카테고리 변경 버튼 (카드 좌상단, 칩 형태) */
 .cat-badge-btn{
@@ -238,7 +291,7 @@ button,input,textarea{font-family:inherit;color:inherit}
   border:none;padding:5px 6px 5px 10px;
   border-radius:8px;font-size:12px;font-weight:700;
   cursor:pointer;font-family:inherit;letter-spacing:-.1px;
-  margin-bottom:10px;transition:background .12s;
+  transition:background .12s;flex-shrink:0;
 }
 .cat-badge-btn:hover{background:#d6e7ff}
 .cat-badge-btn .arrow{width:13px;height:13px;opacity:.7}
@@ -281,21 +334,42 @@ button,input,textarea{font-family:inherit;color:inherit}
 .mp-actions{display:flex;gap:8px;margin-top:14px}
 .mp-actions .btn{flex:1;height:48px;font-size:15px}
 
-/* 카드 액션 (복사 / 삭제) */
-.copy-btn,.del-btn{
+/* 카드 액션 (복사 / 미트볼 메뉴) */
+.copy-btn,.menu-btn{
   position:absolute;top:12px;
   width:32px;height:32px;border:none;background:transparent;
   cursor:pointer;border-radius:10px;
   display:flex;align-items:center;justify-content:center;
   color:var(--text-3);padding:0;transition:.12s;
 }
-.copy-btn{right:12px}
-.del-btn{right:48px}
-.copy-btn:hover,.del-btn:hover{background:var(--surface)}
+.copy-btn{right:48px}
+.menu-btn{right:12px}
+.copy-btn:hover,.menu-btn:hover{background:var(--surface)}
 .copy-btn:hover{color:var(--primary)}
 .copy-btn.copied{color:var(--success)}
-.del-btn:hover{color:var(--danger)}
-.copy-btn svg,.del-btn svg{width:16px;height:16px}
+.menu-btn:hover{color:var(--text)}
+.copy-btn svg,.menu-btn svg{width:16px;height:16px}
+
+/* 미트볼 팝업 메뉴 */
+.card-menu{
+  position:absolute;top:46px;right:12px;
+  background:var(--surface);
+  border-radius:12px;
+  box-shadow:0 6px 20px rgba(25,31,40,.14);
+  padding:6px;z-index:25;min-width:128px;
+  display:none;
+}
+.card-menu.open{display:block}
+.card-menu button{
+  display:block;width:100%;text-align:left;
+  background:none;border:none;cursor:pointer;
+  padding:10px 12px;border-radius:8px;
+  font:inherit;font-size:14px;font-weight:600;color:var(--text);
+  letter-spacing:-.2px;
+}
+.card-menu button:hover{background:var(--surface-1)}
+.card-menu button.danger{color:var(--danger)}
+.card-menu button.danger:hover{background:var(--danger-soft)}
 
 /* ── 빈 상태 ──────────────────────────────────── */
 .empty{padding:64px 20px;text-align:center}
@@ -344,7 +418,21 @@ button,input,textarea{font-family:inherit;color:inherit}
 }
 .chip:hover{background:var(--surface-2)}
 .chip.active{background:var(--text);color:#fff}
-.chip.tag-chip.active{background:var(--primary);color:#fff}
+.chip.domain-chip{padding-left:8px;gap:6px;display:inline-flex;align-items:center}
+.chip.domain-chip .favicon-wrap{
+  width:16px;height:16px;border-radius:3px;flex-shrink:0;
+  background:#fff;
+  display:inline-flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;
+}
+.chip.domain-chip .favicon-wrap img{width:14px;height:14px;object-fit:contain}
+.chip.domain-chip .favicon-wrap.fallback{background:var(--brand,#9aa5b1);color:#fff}
+.chip.domain-chip .favicon-wrap.fallback::before{
+  content:attr(data-initial);
+  font-size:10px;font-weight:800;line-height:1;
+}
+.chip.domain-chip.active{background:var(--primary);color:#fff}
+.chip.domain-chip.active .favicon-wrap{background:rgba(255,255,255,.25)}
 .chip .num{margin-left:6px;font-size:11px;opacity:.6;font-weight:500}
 .lib-empty-tags{font-size:13px;color:var(--text-4);padding:8px 2px;font-weight:500}
 
@@ -381,6 +469,118 @@ button,input,textarea{font-family:inherit;color:inherit}
   z-index:200;box-shadow:0 8px 24px rgba(25,31,40,.2);
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── 상세 화면 ──────────────────────────────── */
+.detail-cat{margin-bottom:0}
+.detail-top{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.detail-meta{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-4);font-weight:500}
+.detail-favicon{width:16px;height:16px;border-radius:3px;flex-shrink:0;object-fit:contain}
+.detail-title-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px}
+.detail-title{font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.5px;line-height:1.35;word-break:break-word;flex:1}
+.detail-copy{
+  flex-shrink:0;margin-top:2px;
+  width:36px;height:36px;border:none;background:var(--surface-1);
+  border-radius:10px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-3);transition:.12s;padding:0;
+}
+.detail-copy:hover{background:var(--surface-2);color:var(--primary)}
+.detail-copy.copied{color:var(--success)}
+.detail-copy svg{width:18px;height:18px}
+.detail-card{
+  background:var(--surface-1);border-radius:14px;padding:16px;margin-bottom:10px;
+}
+.detail-card .label{font-size:12px;font-weight:700;color:var(--text-3);margin-bottom:6px}
+.detail-card .body{font-size:15px;color:var(--text-2);line-height:1.6;word-break:break-word;white-space:pre-wrap}
+.detail-tags{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 20px}
+.detail-link-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;height:52px;margin-bottom:16px;
+  background:var(--surface-1);color:var(--text);
+  border:none;border-radius:14px;cursor:pointer;
+  font:inherit;font-size:15px;font-weight:700;letter-spacing:-.2px;
+  text-decoration:none;
+}
+.detail-link-btn:hover{background:var(--surface-2)}
+.detail-link-btn svg{width:16px;height:16px}
+.detail-source{
+  font-size:13px;color:var(--text-4);font-weight:500;
+  padding-top:16px;border-top:1px solid var(--surface-2);
+}
+
+/* 상세 화면 — 편집 모드 */
+.edit-field{margin-bottom:18px}
+.edit-field label{display:block;font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:8px;letter-spacing:-.2px}
+.edit-field input,.edit-field textarea{
+  width:100%;padding:14px 16px;
+  font-size:15px;font-family:inherit;line-height:1.55;letter-spacing:-.2px;
+  border:none;background:var(--surface-1);border-radius:12px;
+  outline:none;color:var(--text);resize:none;
+}
+.edit-field input:focus,.edit-field textarea:focus{background:var(--surface-2)}
+.edit-field .hint{font-size:12px;color:var(--text-4);font-weight:500;margin-top:6px}
+
+/* ── 플로팅 버튼 (FAB) ──────────────────────── */
+.fab{
+  position:fixed;
+  bottom:24px;
+  right:max(20px, calc(50% - 220px));
+  width:56px;height:56px;
+  border-radius:50%;
+  background:var(--primary);color:#fff;
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 20px rgba(49,130,246,.4);
+  z-index:40;
+  transition:transform .12s,background .12s;
+}
+.fab:hover{background:var(--primary-hover)}
+.fab:active{transform:scale(.94)}
+.fab svg{width:26px;height:26px}
+
+/* ── 내 폴더 ──────────────────────────────── */
+.chip .chip-folder{width:14px;height:14px;margin-right:5px;vertical-align:-2px}
+.folder-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.folder-card{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:16px 6px;
+  background:none;border:none;border-radius:14px;
+  cursor:pointer;font-family:inherit;
+  transition:background .12s;
+}
+.folder-card:hover{background:var(--surface-1)}
+.folder-card .f-icon{width:60px;height:60px;display:flex;align-items:center;justify-content:center;position:relative}
+.folder-card .f-icon svg{width:60px;height:60px;display:block}
+.folder-card .f-badge{
+  position:absolute;top:6px;right:2px;
+  min-width:18px;height:18px;padding:0 5px;
+  background:var(--text);color:#fff;
+  border-radius:9px;
+  font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--surface);
+}
+.folder-card .f-name{
+  font-size:13px;font-weight:600;color:var(--text);letter-spacing:-.2px;
+  text-align:center;line-height:1.35;max-width:100%;
+  display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.folder-card.folder-new .f-icon-new{
+  width:54px;height:54px;
+  border:2px dashed var(--border);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;font-weight:300;color:var(--text-4);line-height:1;
+}
+.folder-card.folder-new:hover .f-icon-new{border-color:var(--primary);color:var(--primary)}
+
+/* 입력 모달 */
+.prompt-input{
+  width:100%;padding:14px 16px;margin-bottom:4px;
+  font-size:15px;font-family:inherit;letter-spacing:-.2px;
+  border:none;background:var(--surface-1);border-radius:12px;
+  outline:none;color:var(--text);
+}
+.prompt-input:focus{background:var(--surface-2)}
 </style>
 </head>
 <body>
@@ -400,8 +600,8 @@ button,input,textarea{font-family:inherit;color:inherit}
         <p class="sub">링크를 보내주시면 다시 찾기 쉽게 정리해 드릴게요.</p>
       </div>
 
-      <div class="composer">
-        <textarea id="input" rows="3" placeholder="링크를 입력해 주세요.&#10;여러 개는 줄바꿈으로 구분해요."></textarea>
+      <div class="composer" id="mainComposer">
+        <textarea id="input" rows="3" placeholder="링크를 입력하거나 문서를 끌어다 놓으세요."></textarea>
         <div class="composer-actions">
           <button type="button" id="attachBtn" class="attach-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
@@ -424,7 +624,7 @@ button,input,textarea{font-family:inherit;color:inherit}
     </div>
   </div>
 
-  <!-- 보관함 화면 (저장 리스트 + 카테고리별 보기 + 태그 검색 + 제목 검색) -->
+  <!-- 보관함 화면 (저장 리스트 + 카테고리/도메인 필터 + 제목·태그 검색) -->
   <div id="library" class="screen">
     <div class="top-bar">
       <div class="back" id="libBack">←</div>
@@ -432,43 +632,75 @@ button,input,textarea{font-family:inherit;color:inherit}
       <div class="right"><span id="libTotal" style="font-size:13px;color:var(--text-3);font-weight:600"></span></div>
     </div>
     <div class="container">
-      <div class="section-label">제목 검색</div>
-      <div class="search-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input id="libSearch" type="text" placeholder="제목 키워드를 입력해 주세요.">
+      <div id="libSearchSection">
+        <div class="section-label">검색</div>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input id="libSearch" type="text" placeholder="제목, 키워드를 입력해 주세요.">
+        </div>
       </div>
 
       <div class="section-label">카테고리</div>
       <div class="chips-row" id="libChips"></div>
 
-      <div class="section-label">
-        태그
-        <button class="reset-link" id="libTagReset" style="display:none">선택 해제</button>
+      <div id="libDomainSection">
+        <div class="section-label">
+          도메인
+          <button class="reset-link" id="libDomainReset" style="display:none">선택 해제</button>
+        </div>
+        <div class="chips-row" id="libDomainChips"></div>
       </div>
-      <div class="chips-row" id="libTagChips"></div>
 
       <div class="section-label">
-        저장 리스트
+        <span id="libListLabel">저장 리스트</span>
         <span class="right" id="libFilteredCount"></span>
       </div>
       <div class="cards" id="libCards"></div>
     </div>
+    <button class="fab" id="libFab" title="새 자료 추가" aria-label="새 자료 추가">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
   </div>
 
   <!-- 폴더 화면 -->
   <div id="folder" class="screen">
-    <div class="top-bar"><div class="back" id="backBtn">←</div></div>
+    <div class="top-bar">
+      <div class="back" id="backBtn">←</div>
+      <div class="right">
+        <button class="ghost-btn" id="folderMenuBtn" title="폴더 메뉴" aria-label="폴더 메뉴">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="folder-menu" id="folderMenu">
+      <button id="folderRename">수정하기</button>
+      <button class="danger" id="folderDelete">삭제하기</button>
+    </div>
     <div class="container">
       <div class="folder-head">
         <div class="folder-name" id="folderName">트렌드·뉴스</div>
         <div class="folder-count" id="folderCount">1개의 자료</div>
       </div>
       <div class="cards" id="cards"></div>
-      <div class="btn-row">
-        <button class="btn btn-secondary" id="addMore">자료 더 분류하기</button>
-        <button class="btn btn-danger" id="clearAll">전체 삭제</button>
+    </div>
+    <button class="fab" id="folderFab" title="새 자료 추가" aria-label="새 자료 추가">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+
+  <!-- 상세 화면 -->
+  <div id="detail" class="screen">
+    <div class="top-bar">
+      <div class="back" id="detailBack">←</div>
+      <div class="right">
+        <button class="ghost-btn" id="detailEditBtn">편집</button>
+        <button class="ghost-btn" id="detailDeleteBtn" style="display:none;color:var(--danger)">삭제</button>
       </div>
     </div>
+    <div class="container" id="detailBody"></div>
+    <button class="fab" id="detailFab" title="새 자료 추가" aria-label="새 자료 추가">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
   </div>
 
 </div>
@@ -478,6 +710,18 @@ button,input,textarea{font-family:inherit;color:inherit}
   <div class="modal">
     <p id="alertMsg"></p>
     <button class="btn" id="alertOk">확인</button>
+  </div>
+</div>
+
+<!-- 입력 모달 (새 폴더 / 폴더 이름 변경) -->
+<div class="modal-bg" id="promptModal">
+  <div class="modal">
+    <div class="mp-title" id="promptTitle"></div>
+    <input type="text" id="promptInput" class="prompt-input" maxlength="20" autocomplete="off">
+    <div class="mp-actions">
+      <button class="btn btn-secondary" id="promptCancel">취소</button>
+      <button class="btn" id="promptOk">확인</button>
+    </div>
   </div>
 </div>
 
@@ -498,6 +742,32 @@ button,input,textarea{font-family:inherit;color:inherit}
   </div>
 </div>
 
+<!-- 새 자료 추가 모달 -->
+<div class="modal-bg" id="addModal">
+  <div class="modal">
+    <div class="mp-title">새 자료 추가</div>
+    <div class="composer" id="addComposer">
+      <textarea id="addInput" placeholder="링크를 입력하거나 문서를 끌어다 놓으세요.&#10;여러 개는 줄바꿈으로 구분해요."></textarea>
+      <div class="composer-actions">
+        <button type="button" id="addAttachBtn" class="attach-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          파일 첨부
+        </button>
+        <input type="file" id="addFileInput" accept=".pdf,.docx,.xlsx,.xls" hidden>
+        <div id="addFileChipSlot"></div>
+        <div class="spacer"></div>
+      </div>
+    </div>
+    <button type="button" class="memo-toggle" id="addMemoToggle">＋ 메모 추가하기 <span style="color:var(--text-4);font-weight:500">(선택)</span></button>
+    <div class="memo-wrap" id="addMemoWrap">
+      <textarea id="addMemo" placeholder="저장 이유나 메모를 적어두면 나중에 찾기 쉬워요."></textarea>
+    </div>
+    <button class="btn" id="addGo" style="margin-top:16px">분류하기</button>
+    <button class="btn btn-secondary" id="addCancel" style="margin-top:8px">취소</button>
+    <div id="addError"></div>
+  </div>
+</div>
+
 <!-- 토스트 -->
 <div class="toast" id="toast"></div>
 
@@ -505,6 +775,8 @@ button,input,textarea{font-family:inherit;color:inherit}
 const MAX_LENGTH = 2000;
 const URL_REGEX = /^https?:\/\/[^\s]+$/i;
 const FOLDERS_STORAGE = "kiro_folders";
+const FOLDER_LIST_STORAGE = "kiro_folder_list";
+const DEFAULT_FOLDERS = ["개발", "디자인", "기획·PM", "트렌드·뉴스", "인사이트·아티클"];
 
 const $ = (id) => document.getElementById(id);
 const $input = $("input"), $count = $("count"), $go = $("go"), $error = $("error");
@@ -513,13 +785,79 @@ const $toast = $("toast");
 const $fileInput = $("fileInput"), $attachBtn = $("attachBtn"), $fileChipSlot = $("fileChipSlot");
 const $memo = $("memo");
 const $libSearch = $("libSearch"), $libChips = $("libChips"), $libCards = $("libCards"), $libTotal = $("libTotal");
-const $libTagChips = $("libTagChips"), $libTagReset = $("libTagReset"), $libFilteredCount = $("libFilteredCount");
+const $libFilteredCount = $("libFilteredCount");
+const $libDomainChips = $("libDomainChips"), $libDomainReset = $("libDomainReset");
 
 let folders = JSON.parse(localStorage.getItem(FOLDERS_STORAGE) || "{}");
+let folderList = JSON.parse(localStorage.getItem(FOLDER_LIST_STORAGE) || "null") || [...DEFAULT_FOLDERS];
 let currentCategory = null;
 let isProcessing = false;
 let attachedFile = null;
-let libFilter = { q: "", category: "전체", tags: new Set() };
+let libFilter = { q: "", category: "전체", domains: new Set() };
+
+function saveFolderList() {
+  localStorage.setItem(FOLDER_LIST_STORAGE, JSON.stringify(folderList));
+}
+
+function getItemDomain(item) {
+  if (!item?.url) return null;
+  try { return new URL(item.url).hostname.replace(/^www\./, ""); }
+  catch { return null; }
+}
+
+function faviconUrl(domain) {
+  // DuckDuckGo의 ip3 서비스 — 한국 사이트 포함 안정적
+  return `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`;
+}
+
+// 주요 도메인 브랜드 컬러 (favicon 폴백용)
+const BRAND_COLORS = {
+  "naver.com": "#03c75a",
+  "n.news.naver.com": "#03c75a",
+  "news.naver.com": "#03c75a",
+  "m.naver.com": "#03c75a",
+  "blog.naver.com": "#03c75a",
+  "cafe.naver.com": "#03c75a",
+  "youtube.com": "#ff0000",
+  "youtu.be": "#ff0000",
+  "github.com": "#24292f",
+  "x.com": "#000000",
+  "twitter.com": "#1da1f2",
+  "instagram.com": "#e4405f",
+  "facebook.com": "#1877f2",
+  "figma.com": "#a259ff",
+  "medium.com": "#000000",
+  "velog.io": "#20c997",
+  "tistory.com": "#ff5126",
+  "brunch.co.kr": "#ff8b65",
+  "notion.so": "#000000",
+  "linkedin.com": "#0a66c2",
+  "news.hada.io": "#fb923c",
+  "dribbble.com": "#ea4c89",
+  "behance.net": "#1769ff",
+  "stackoverflow.com": "#f48024",
+  "google.com": "#4285f4",
+};
+
+function getBrandColor(domain) {
+  if (!domain) return "#9aa5b1";
+  if (BRAND_COLORS[domain]) return BRAND_COLORS[domain];
+  for (const key of Object.keys(BRAND_COLORS)) {
+    if (domain === key || domain.endsWith("." + key)) return BRAND_COLORS[key];
+  }
+  // 해시 기반 폴백 컬러
+  let h = 0;
+  for (const c of domain) h = (h * 31 + c.charCodeAt(0)) & 0xffffff;
+  return `hsl(${Math.abs(h) % 360}, 45%, 48%)`;
+}
+
+function getDomainInitial(domain) {
+  if (!domain) return "#";
+  // 서브도메인이 길면 메인 도메인의 첫 글자 사용 (예: n.news.naver.com → N)
+  const parts = domain.split(".");
+  const main = parts.length >= 2 ? parts[parts.length - 2] : parts[0];
+  return (main[0] || "#").toUpperCase();
+}
 
 function saveFolders() {
   localStorage.setItem(FOLDERS_STORAGE, JSON.stringify(folders));
@@ -550,52 +888,123 @@ function showModal(msg) {
   });
 }
 
+// 텍스트 입력 모달 — 새 폴더 / 폴더 이름 변경에 사용
+function promptModal(title, value = "", placeholder = "") {
+  return new Promise((resolve) => {
+    const modal = $("promptModal"), input = $("promptInput");
+    $("promptTitle").textContent = title;
+    input.value = value;
+    input.placeholder = placeholder;
+    modal.classList.add("show");
+    setTimeout(() => { input.focus(); input.select(); }, 0);
+    const close = (val) => {
+      modal.classList.remove("show");
+      $("promptOk").onclick = null;
+      $("promptCancel").onclick = null;
+      input.onkeydown = null;
+      resolve(val);
+    };
+    const confirm = () => {
+      const v = input.value.trim();
+      if (!v) return;
+      close(v);
+    };
+    $("promptOk").onclick = confirm;
+    $("promptCancel").onclick = () => close(null);
+    input.onkeydown = (e) => {
+      if (e.key === "Enter") { e.preventDefault(); confirm(); }
+    };
+  });
+}
+
 function updateGoButton() {
   const len = $input.value.trim().length;
   $go.disabled = isProcessing || (len === 0 && !attachedFile);
 }
 
-function renderFileChip() {
-  $fileChipSlot.innerHTML = "";
-  if (!attachedFile) return;
+// 파일 칩 렌더 — 메인/모달 공용
+function renderFileChipEl(slotEl, file, onRemove) {
+  slotEl.innerHTML = "";
+  if (!file) return;
   const chip = document.createElement("div");
   chip.className = "file-chip";
   chip.innerHTML = `📎 <span class="name"></span><button type="button" class="x" aria-label="첨부 취소">×</button>`;
-  chip.querySelector(".name").textContent = attachedFile.name;
-  chip.querySelector(".x").onclick = () => {
+  chip.querySelector(".name").textContent = file.name;
+  chip.querySelector(".x").onclick = onRemove;
+  slotEl.appendChild(chip);
+}
+
+function renderFileChip() {
+  renderFileChipEl($fileChipSlot, attachedFile, () => {
     attachedFile = null;
     $fileInput.value = "";
     renderFileChip();
     updateGoButton();
-  };
-  $fileChipSlot.appendChild(chip);
+  });
 }
 
 $attachBtn.onclick = () => $fileInput.click();
 
+const ALLOWED_EXTS = ["pdf", "docx", "xlsx", "xls"];
+const MAX_FILE_MB = 4;
+
+// 메인 화면 파일 첨부 (버튼 / 드래그앤드롭 공통)
+function setAttachedFile(file) {
+  if (!file) return;
+  const ext = (file.name.split(".").pop() || "").toLowerCase();
+  if (!ALLOWED_EXTS.includes(ext)) {
+    showToast("PDF · DOCX · XLSX 파일만 올릴 수 있어요");
+    return;
+  }
+  if (file.size > MAX_FILE_MB * 1024 * 1024) {
+    showToast(`${MAX_FILE_MB}MB 이하 파일만 올릴 수 있어요`);
+    return;
+  }
+  attachedFile = file;
+  renderFileChip();
+  updateGoButton();
+}
+
 const $memoToggle = $("memoToggle"), $memoWrap = $("memoWrap");
+// 토글 버튼 — 문구는 항상 "＋ 메모 추가하기 (선택)"로 고정
 $memoToggle.onclick = () => {
   const open = $memoWrap.classList.toggle("open");
-  $memoToggle.innerHTML = open
-    ? `− 메모 닫기`
-    : `＋ 메모 추가하기 <span style="color:var(--text-4);font-weight:500">(선택)</span>`;
   if (open) setTimeout(() => $memo.focus(), 0);
 };
 $fileInput.addEventListener("change", () => {
-  const f = $fileInput.files?.[0];
-  if (!f) return;
-  attachedFile = f;
-  renderFileChip();
-  updateGoButton();
+  setAttachedFile($fileInput.files?.[0]);
 });
 
-async function uploadFile(file) {
-  const fd = new FormData();
-  fd.append("file", file);
-  const res = await fetch("/api/upload", { method: "POST", body: fd });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `업로드 실패 (${res.status})`);
-  return data;
+// 메인 컴포저 드래그앤드롭
+const $composer = document.querySelector("#main .composer");
+if ($composer) {
+  ["dragenter", "dragover"].forEach(ev =>
+    $composer.addEventListener(ev, (e) => {
+      e.preventDefault();
+      $composer.classList.add("dragover");
+    })
+  );
+  ["dragleave", "drop"].forEach(ev =>
+    $composer.addEventListener(ev, (e) => {
+      e.preventDefault();
+      if (ev === "dragleave" && $composer.contains(e.relatedTarget)) return;
+      $composer.classList.remove("dragover");
+    })
+  );
+  $composer.addEventListener("drop", (e) => {
+    const f = e.dataTransfer?.files?.[0];
+    if (f) setAttachedFile(f);
+  });
+}
+
+// 파일을 base64로 변환 (data:...;base64,XXXX → XXXX)
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(",")[1]);
+    r.onerror = () => reject(new Error("파일을 읽을 수 없습니다."));
+    r.readAsDataURL(file);
+  });
 }
 
 $input.addEventListener("input", () => {
@@ -603,6 +1012,9 @@ $input.addEventListener("input", () => {
   $count.textContent = len;
   $count.parentElement.classList.toggle("over", len > MAX_LENGTH);
   updateGoButton();
+  // 링크 입력 시 메모 영역 자동 표시, 모두 지우면 자동으로 닫힘
+  if ($input.value.trim()) $memoWrap.classList.add("open");
+  else $memoWrap.classList.remove("open");
 });
 
 function getDomain(url) {
@@ -621,11 +1033,12 @@ async function fetchOG(url) {
   }
 }
 
-async function classify(input) {
+async function classify(input, fileData, fileName) {
+  const body = fileData ? { input, fileData, fileName } : { input };
   const res = await fetch("/api/classify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ input })
+    body: JSON.stringify(body)
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || `서버 오류 (${res.status})`);
@@ -659,6 +1072,11 @@ function escapeHtml(str) {
 const COPY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 const CHECK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 const TRASH_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>`;
+const MENU_ICON = `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>`;
+const LINK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
+const FOLDER_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+const FOLDER_FILLED_ICON = `<svg viewBox="0 0 48 48" fill="none"><path d="M4 14a4 4 0 0 1 4-4h10.3a3 3 0 0 1 2.1.9l3.1 3.1H40a4 4 0 0 1 4 4v17a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V14z" fill="#3182f6"/><path d="M4 21h40v14a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V21z" fill="#5b9bff"/></svg>`;
+const FOLDERS_VIEW = "__folders__";
 
 function openCategoryPicker(currentCat) {
   return new Promise((resolve) => {
@@ -750,75 +1168,103 @@ function renderFolder(category) {
     return;
   }
 
-  $cards.innerHTML = items.map((item, idx) => `
-    <div class="card">
-      <button class="del-btn" data-idx="${idx}" title="삭제">${TRASH_ICON}</button>
+  $cards.innerHTML = items.map((item, idx) => {
+    const domain = getItemDomain(item);
+    const brand = domain ? getBrandColor(domain) : "";
+    const initial = domain ? getDomainInitial(domain) : "";
+    const iconWrapAttrs = domain
+      ? `class="card-icon-wrap" style="--brand:${brand}" data-initial="${initial}"`
+      : `class="card-icon-wrap file"`;
+    const iconImg = domain
+      ? `<img src="${faviconUrl(domain)}" alt="" onerror="this.remove();this.parentElement.classList.add('fallback')">`
+      : "";
+    return `
+    <div class="card" data-idx="${idx}">
       <button class="copy-btn" data-idx="${idx}" title="복사">${COPY_ICON}</button>
-      <button class="cat-badge-btn" data-idx="${idx}" title="카테고리 변경">
-        ${escapeHtml(category)}
-        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <a class="card-link" href="${item.url || '#'}" target="_blank" ${item.url ? '' : 'onclick="return false"'}>
-        <div class="card-title">${escapeHtml(item.title)}</div>
-        ${item.summary ? `<div class="card-desc">${escapeHtml(item.summary)}</div>` : ""}
-        ${item.memo ? `<div class="card-desc" style="color:var(--text-3)">💭 ${escapeHtml(item.memo)}</div>` : ""}
-        ${item.tags && item.tags.length ? `
-          <div class="card-tags">
-            ${item.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join("")}
-          </div>
-        ` : ""}
-        <div class="card-meta">
-          ${item.site ? `<span class="card-site">${escapeHtml(item.site)}</span>` : ""}
-          <span>${item.savedAt}</span>
+      <button class="menu-btn" data-idx="${idx}" title="메뉴">${MENU_ICON}</button>
+      <div class="card-menu" data-idx="${idx}">
+        <button class="menu-edit">수정하기</button>
+        <button class="menu-delete danger">삭제하기</button>
+      </div>
+      <div ${iconWrapAttrs}>${iconImg}</div>
+      <div class="card-content">
+        <div class="card-top-row">
+          <button class="cat-badge-btn" data-idx="${idx}" title="카테고리 변경">
+            ${escapeHtml(category)}
+            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <span class="card-date">${escapeHtml(item.savedAt || "")}</span>
         </div>
-      </a>
+        <div class="card-link">
+          <div class="card-title">${escapeHtml(item.title)}</div>
+          ${item.summary ? `<div class="card-desc">${escapeHtml(item.summary)}</div>` : ""}
+          ${item.tags && item.tags.length ? `
+            <div class="card-tags">
+              ${item.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join("")}
+            </div>
+          ` : ""}
+        </div>
+      </div>
     </div>
-  `).join("");
+  `;
+  }).join("");
 
-  $cards.querySelectorAll(".cat-badge-btn").forEach(btn => {
-    btn.onclick = async (e) => {
+  $cards.querySelectorAll(".card").forEach(el => {
+    const idx = parseInt(el.dataset.idx);
+
+    el.addEventListener("click", (e) => {
+      if (e.target.closest(".copy-btn") || e.target.closest(".menu-btn") ||
+          e.target.closest(".card-menu") || e.target.closest(".cat-badge-btn")) return;
+      renderDetail(currentCategory, idx, "folder");
+    });
+
+    el.querySelector(".cat-badge-btn").onclick = async (e) => {
       e.stopPropagation();
-      const idx = parseInt(btn.dataset.idx);
       const target = await openCategoryPicker(currentCategory);
       if (!target || target === currentCategory) return;
       await moveItem(currentCategory, idx, target);
       if (folders[currentCategory]) renderFolder(currentCategory);
       else showScreen("main");
     };
-  });
 
-  $cards.querySelectorAll(".del-btn").forEach(btn => {
-    btn.onclick = async (e) => {
+    el.querySelector(".menu-btn").onclick = (e) => {
       e.stopPropagation();
-      const idx = parseInt(btn.dataset.idx);
+      const menu = el.querySelector(".card-menu");
+      const isOpen = menu.classList.contains("open");
+      closeAllCardMenus();
+      if (!isOpen) menu.classList.add("open");
+    };
+
+    el.querySelector(".menu-edit").onclick = (e) => {
+      e.stopPropagation();
+      closeAllCardMenus();
+      renderDetail(currentCategory, idx, "folder", { edit: true });
+    };
+
+    el.querySelector(".menu-delete").onclick = async (e) => {
+      e.stopPropagation();
+      closeAllCardMenus();
       if (await deleteItem(currentCategory, idx)) {
         if (folders[currentCategory]) renderFolder(currentCategory);
-        else { showScreen("main"); }
+        else showScreen("main");
       }
     };
-  });
 
-  $cards.querySelectorAll(".copy-btn").forEach(btn => {
-    btn.onclick = async (e) => {
+    el.querySelector(".copy-btn").onclick = async (e) => {
       e.stopPropagation();
-      const idx = parseInt(btn.dataset.idx);
       const item = folders[currentCategory][idx];
       const text = [
-        item.title,
-        item.summary,
+        item.title, item.summary,
         item.tags?.length ? item.tags.map(t => `#${t}`).join(" ") : "",
         item.url || ""
       ].filter(Boolean).join("\n");
-
+      const btn = el.querySelector(".copy-btn");
       try {
         await navigator.clipboard.writeText(text);
         btn.innerHTML = CHECK_ICON;
         btn.classList.add("copied");
         showToast("복사했어요");
-        setTimeout(() => {
-          btn.innerHTML = COPY_ICON;
-          btn.classList.remove("copied");
-        }, 1500);
+        setTimeout(() => { btn.innerHTML = COPY_ICON; btn.classList.remove("copied"); }, 1500);
       } catch (err) {
         showToast("복사 실패");
       }
@@ -826,27 +1272,62 @@ function renderFolder(category) {
   });
 }
 
-$("backBtn").onclick = () => showScreen("main");
-$("addMore").onclick = () => {
-  $input.value = "";
-  $memo.value = "";
-  $count.textContent = "0";
-  attachedFile = null;
-  $fileInput.value = "";
-  renderFileChip();
-  $memoWrap.classList.remove("open");
-  $memoToggle.innerHTML = `＋ 메모 추가하기 <span style="color:var(--text-4);font-weight:500">(선택)</span>`;
-  updateGoButton();
-  showScreen("main");
+$("backBtn").onclick = () => { renderLibrary(); showScreen("library"); };
+
+// ── 폴더 메뉴 (미트볼 → 수정하기 / 삭제하기) ────────────
+const $folderMenu = $("folderMenu");
+$("folderMenuBtn").onclick = (e) => {
+  e.stopPropagation();
+  $folderMenu.classList.toggle("open");
+};
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("#folderMenu") && !e.target.closest("#folderMenuBtn")) {
+    $folderMenu.classList.remove("open");
+  }
+});
+
+$("folderRename").onclick = async () => {
+  $folderMenu.classList.remove("open");
+  const oldName = currentCategory;
+  const newName = await promptModal("폴더 이름 변경", oldName, "폴더 이름 (최대 20자)");
+  if (!newName || newName === oldName) return;
+  // folders 키 이동 (자료가 있으면 합침)
+  if (folders[oldName]) {
+    folders[newName] = [...(folders[newName] || []), ...folders[oldName]];
+    delete folders[oldName];
+    saveFolders();
+  }
+  // folderList 반영
+  const li = folderList.indexOf(oldName);
+  if (li !== -1) folderList[li] = newName;
+  else if (!folderList.includes(newName)) folderList.push(newName);
+  saveFolderList();
+  currentCategory = newName;
+  renderFolder(newName);
+  showToast("폴더 이름을 바꿨어요");
 };
 
-$("clearAll").onclick = () => {
-  if (!confirm("저장된 모든 자료를 삭제할까요?\n이 작업은 되돌릴 수 없어요.")) return;
-  folders = {};
+$("folderDelete").onclick = async () => {
+  $folderMenu.classList.remove("open");
+  const name = currentCategory;
+  const count = folders[name]?.length || 0;
+  const ok = await confirmModal(
+    count > 0
+      ? `"${name}" 폴더와 안의 자료 ${count}개를 모두 삭제할까요?`
+      : `"${name}" 폴더를 삭제할까요?`,
+    { okLabel: "삭제", cancelLabel: "취소" }
+  );
+  if (!ok) return;
+  delete folders[name];
   saveFolders();
-  showToast("모든 자료가 삭제됐어요");
-  showScreen("main");
+  const li = folderList.indexOf(name);
+  if (li !== -1) { folderList.splice(li, 1); saveFolderList(); }
+  showToast("폴더를 삭제했어요");
+  renderLibrary();
+  showScreen("library");
 };
+
+$("folderFab").onclick = openAddModal;
 
 function isValidURL(str) {
   if (!URL_REGEX.test(str)) return false;
@@ -900,8 +1381,23 @@ function confirmModal(msg, opts = {}) {
   });
 }
 
-async function classifyOne({ classifyInput, baseItem }) {
-  const raw = await classify(classifyInput);
+function loadingHtml(msg, progress) {
+  return `<span class="loading"><span class="spinner"></span>${msg}${progress ? ` ${progress}` : ""}</span>`;
+}
+
+// 1단계 메시지를 보여주고 1.8초 뒤 2단계로 전환. 정리용 함수를 반환.
+function startStageLoading(goBtn, { isFile = false, progress = "" } = {}) {
+  const step1 = isFile ? "문서를 분석하고 있어요" : "링크를 분석하고 있어요";
+  const step2 = "카테고리를 분류 중이에요";
+  goBtn.innerHTML = loadingHtml(step1, progress);
+  const timer = setTimeout(() => {
+    goBtn.innerHTML = loadingHtml(step2, progress);
+  }, 1800);
+  return () => clearTimeout(timer);
+}
+
+async function classifyOne({ classifyInput, baseItem, fileData, fileName }) {
+  const raw = await classify(classifyInput, fileData, fileName);
   const data = parseResponse(raw.trim());
   console.log(`[키로] 분류:`, data);
   const item = { ...baseItem, title: baseItem.title || data.title, summary: data.summary || "", tags: data.tags };
@@ -912,45 +1408,67 @@ async function classifyOne({ classifyInput, baseItem }) {
   return { category: data.category, item };
 }
 
-$go.onclick = async () => {
-  if (isProcessing) return;
-  const raw = $input.value.trim();
-  $error.innerHTML = "";
+// 에러 원인을 한 줄로 — 무엇이 잘못됐는지 사용자에게 안내
+function friendlyError(e) {
+  const m = (e?.message || "").toLowerCase();
+  if (m.includes("failed to fetch") || m.includes("network")) return "네트워크 연결을 확인해 주세요.";
+  if (m.includes("응답 파싱") || m.includes("parse")) return "AI 응답 형식이 올바르지 않아요.";
+  if (m.includes("파일")) return e.message;
+  if (m.includes("429") || m.includes("rate")) return "요청이 많아요. 잠시 후 다시 시도해 주세요.";
+  if (m.includes("500") || m.includes("서버")) return "서버에서 일시적인 문제가 발생했어요.";
+  if (m.includes("413") || m.includes("large") || m.includes("크")) return "파일이 너무 커요. 4MB 이하로 올려주세요.";
+  return (e?.message || "알 수 없는 오류").split("\n")[0].slice(0, 80);
+}
 
-  if (!raw && !attachedFile) return;
+// 분류 핵심 로직 — 메인 화면과 추가 모달이 공유
+async function classifyAndSave({ rawText, memoText, file, goBtn, errorEl, onSuccess }) {
+  if (isProcessing) return;
+  const raw = (rawText || "").trim();
+  errorEl.innerHTML = "";
+
+  if (!raw && !file) return;
 
   if (raw.length > MAX_LENGTH) {
     await showModal("최대 2,000자까지 입력 가능합니다");
     return;
   }
 
-  const parsed = parseInput(raw, $memo.value);
+  const parsed = parseInput(raw, memoText);
 
-  if (!attachedFile && parsed.urls.length === 0) {
+  if (!file && parsed.urls.length === 0) {
     await showModal("URL을 한 개 이상 입력하거나 파일을 첨부해 주세요.");
     return;
   }
 
   isProcessing = true;
+  goBtn.disabled = true;
   updateGoButton();
-  $go.innerHTML = '<span class="loading"><span class="spinner"></span>요약 중...</span>';
+  goBtn.innerHTML = loadingHtml(file ? "문서를 분석하고 있어요" : "링크를 분석하고 있어요");
 
   let lastCategory = null;
   let fileSaved = false;
   const today = new Date().toLocaleDateString("ko-KR", { month: "long", day: "numeric" });
 
   try {
-    if (attachedFile) {
-      const up = await uploadFile(attachedFile);
-      const hint = parsed.memo ? `사용자 메모: ${parsed.memo}\n` : "";
-      const classifyInput = `${hint}파일명: ${up.original_name}\n[파일: ${up.file_path}]`;
-      const baseItem = { url: "", title: up.original_name, site: up.original_name, savedAt: today, memo: parsed.memo };
-      const r = await classifyOne({ classifyInput, baseItem });
-      lastCategory = r.category;
-      fileSaved = true;
-      attachedFile = null;
-      $fileInput.value = "";
-      renderFileChip();
+    if (file) {
+      const stopLoading = startStageLoading(goBtn, { isFile: true });
+      try {
+        const fileData = await fileToBase64(file);
+        const baseItem = { url: "", title: "", site: file.name, savedAt: today, memo: parsed.memo };
+        const r = await classifyOne({
+          classifyInput: parsed.memo || "",
+          baseItem,
+          fileData,
+          fileName: file.name,
+        });
+        lastCategory = r.category;
+        fileSaved = true;
+        attachedFile = null;
+        $fileInput.value = "";
+        renderFileChip();
+      } finally {
+        stopLoading();
+      }
     }
 
     let savedCount = 0, skipped = 0, overwritten = 0;
@@ -975,27 +1493,31 @@ $go.onclick = async () => {
         overwritten++;
       }
 
-      $go.innerHTML = `<span class="loading"><span class="spinner"></span>요약 중... (${i + 1}/${parsed.urls.length})</span>`;
+      const progress = parsed.urls.length > 1 ? `(${i + 1}/${parsed.urls.length})` : "";
+      const stopLoading = startStageLoading(goBtn, { isFile: false, progress });
+      try {
+        const domain = getDomain(url);
+        const og = await fetchOG(url);
+        const parts = [`URL: ${url}`];
+        if (domain) parts.push(`도메인: ${domain}`);
+        if (og?.siteName) parts.push(`사이트: ${og.siteName}`);
+        if (og?.title) parts.push(`제목: ${og.title}`);
+        if (og?.description) parts.push(`설명: ${og.description}`);
+        if (parsed.memo) parts.push(`사용자 메모: ${parsed.memo}`);
 
-      const domain = getDomain(url);
-      const og = await fetchOG(url);
-      const parts = [`URL: ${url}`];
-      if (domain) parts.push(`도메인: ${domain}`);
-      if (og?.siteName) parts.push(`사이트: ${og.siteName}`);
-      if (og?.title) parts.push(`제목: ${og.title}`);
-      if (og?.description) parts.push(`설명: ${og.description}`);
-      if (parsed.memo) parts.push(`사용자 메모: ${parsed.memo}`);
-
-      const baseItem = {
-        url,
-        title: og?.title || domain || url,
-        site: og?.siteName || domain || "",
-        savedAt: today,
-        memo: parsed.memo,
-      };
-      const r = await classifyOne({ classifyInput: parts.join("\n"), baseItem });
-      lastCategory = r.category;
-      savedCount++;
+        const baseItem = {
+          url,
+          title: og?.title || domain || url,
+          site: og?.siteName || domain || "",
+          savedAt: today,
+          memo: parsed.memo,
+        };
+        const r = await classifyOne({ classifyInput: parts.join("\n"), baseItem });
+        lastCategory = r.category;
+        savedCount++;
+      } finally {
+        stopLoading();
+      }
     }
 
     const totalSaved = savedCount + (fileSaved ? 1 : 0);
@@ -1003,7 +1525,7 @@ $go.onclick = async () => {
     if (!totalSaved && skipped) {
       // 전부 중복으로 건너뜀
       isProcessing = false;
-      $go.textContent = "분류하기";
+      goBtn.textContent = "분류하기";
       updateGoButton();
       return;
     }
@@ -1012,35 +1534,48 @@ $go.onclick = async () => {
     else if (totalSaved === 1 && lastCategory) showToast(`[${lastCategory}]에 저장됐어요`);
 
     if (totalSaved > 0) {
-      // 입력 초기화
-      $input.value = "";
-      $memo.value = "";
-      $count.textContent = "0";
-      $count.parentElement.classList.remove("over");
-      attachedFile = null;
-      $fileInput.value = "";
-      renderFileChip();
-
+      if (onSuccess) onSuccess();
       // 보관함으로 이동 (필터 초기화 — 새 자료가 맨 위에 보이도록)
-      libFilter = { q: "", category: "전체", tags: new Set() };
+      libFilter = { q: "", category: "전체", domains: new Set() };
       $libSearch.value = "";
       renderLibrary();
       showScreen("library");
     }
   } catch (e) {
     console.error(e);
-    $error.innerHTML = `
+    errorEl.innerHTML = `
       <div class="error">
-        <div class="error-msg">잠시 문제가 생겼어요. 다시 시도해 주세요.</div>
-        <button type="button" class="btn-retry" id="retryBtn">다시 시도</button>
+        <div class="error-msg">잠시 응답이 늦어요. 다시 시도해 주세요.</div>
+        <div class="error-detail">${escapeHtml(friendlyError(e))}</div>
+        <button type="button" class="btn-retry">다시 시도</button>
       </div>`;
-    $("retryBtn").onclick = () => { $error.innerHTML = ""; $go.click(); };
+    errorEl.querySelector(".btn-retry").onclick = () => { errorEl.innerHTML = ""; goBtn.click(); };
   } finally {
     isProcessing = false;
-    $go.textContent = "분류하기";
+    goBtn.disabled = false;
+    goBtn.textContent = "분류하기";
     updateGoButton();
   }
-};
+}
+
+$go.onclick = () => classifyAndSave({
+  rawText: $input.value,
+  memoText: $memo.value,
+  file: attachedFile,
+  goBtn: $go,
+  errorEl: $error,
+  onSuccess: () => {
+    $input.value = "";
+    $memo.value = "";
+    $count.textContent = "0";
+    $count.parentElement.classList.remove("over");
+    attachedFile = null;
+    $fileInput.value = "";
+    renderFileChip();
+    $memoWrap.classList.remove("open");
+    $memoToggle.innerHTML = `＋ 메모 추가하기 <span style="color:var(--text-4);font-weight:500">(선택)</span>`;
+  },
+});
 
 // ── 보관함 (전체 리스트 + 검색 + 카테고리 필터) ─────────────
 function allItems() {
@@ -1049,59 +1584,114 @@ function allItems() {
   );
 }
 
-function matchesTitle(item, q) {
+function matchesQuery(item, q) {
   if (!q) return true;
-  return (item.title || "").toLowerCase().includes(q.toLowerCase());
+  const needle = q.toLowerCase();
+  if ((item.title || "").toLowerCase().includes(needle)) return true;
+  if ((item.tags || []).some(t => t.toLowerCase().includes(needle))) return true;
+  return false;
 }
 
 function renderLibrary() {
   const all = allItems();
-  $libTotal.textContent = `총 ${all.length}개`;
 
-  // 카테고리 칩
-  const catCounts = { 전체: all.length };
-  for (const it of all) catCounts[it._cat] = (catCounts[it._cat] || 0) + 1;
-  const cats = ["전체", ...Object.keys(catCounts).filter(c => c !== "전체")];
-  $libChips.innerHTML = cats.map(c => `
-    <button class="chip ${libFilter.category === c ? 'active' : ''}" data-cat="${escapeHtml(c)}">
-      ${escapeHtml(c)}<span class="num">${catCounts[c] || 0}</span>
+  // 카테고리 칩 — [전체] / [내 폴더]
+  $libChips.innerHTML = `
+    <button class="chip ${libFilter.category === "전체" ? 'active' : ''}" data-cat="전체">
+      전체<span class="num">${all.length}</span>
     </button>
-  `).join("");
+    <button class="chip ${libFilter.category === FOLDERS_VIEW ? 'active' : ''}" data-cat="${FOLDERS_VIEW}">
+      <svg class="chip-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>내 폴더
+    </button>
+  `;
   $libChips.querySelectorAll(".chip").forEach(el => {
     el.onclick = () => { libFilter.category = el.dataset.cat; renderLibrary(); };
   });
 
-  // 태그 칩 (사용량 내림차순, 상위 20개)
-  const tagCounts = new Map();
-  for (const it of all) for (const t of (it.tags || [])) tagCounts.set(t, (tagCounts.get(t) || 0) + 1);
-  const topTags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20);
-  if (topTags.length === 0) {
-    $libTagChips.innerHTML = `<div class="lib-empty-tags">아직 태그가 없어요</div>`;
-  } else {
-    $libTagChips.innerHTML = topTags.map(([t, n]) => `
-      <button class="chip tag-chip ${libFilter.tags.has(t) ? 'active' : ''}" data-tag="${escapeHtml(t)}">
-        #${escapeHtml(t)}<span class="num">${n}</span>
+  // 내 폴더 모드 — 폴더 그리드를 렌더하고 종료
+  if (libFilter.category === FOLDERS_VIEW) {
+    $("libSearchSection").style.display = "";
+    $("libDomainSection").style.display = "none";
+    $("libListLabel").textContent = "내 폴더";
+    $libFilteredCount.textContent = "";
+    const q = libFilter.q.toLowerCase();
+    const folderCats = [...new Set([...folderList, ...Object.keys(folders)])]
+      .filter(c => !q || c.toLowerCase().includes(q));
+    $libCards.innerHTML = `<div class="folder-grid">` + folderCats.map(cat => {
+      const count = folders[cat]?.length || 0;
+      return `
+      <button class="folder-card" data-cat="${escapeHtml(cat)}">
+        <span class="f-icon">${FOLDER_FILLED_ICON}<span class="f-badge">${count}</span></span>
+        <span class="f-name">${escapeHtml(cat)}</span>
+      </button>`;
+    }).join("") + `
+      <button class="folder-card folder-new" id="newFolderBtn">
+        <span class="f-icon-new">+</span>
+        <span class="f-name">새 폴더</span>
       </button>
-    `).join("");
-    $libTagChips.querySelectorAll(".chip").forEach(el => {
+    </div>`;
+    $libCards.querySelectorAll(".folder-card[data-cat]").forEach(el => {
+      el.onclick = () => { renderFolder(el.dataset.cat); showScreen("folder"); };
+    });
+    $("newFolderBtn").onclick = async () => {
+      const name = await promptModal("새 폴더 만들기", "", "폴더 이름 (최대 20자)");
+      if (!name) return;
+      if (!folderList.includes(name) && !folders[name]) {
+        folderList.push(name);
+        saveFolderList();
+        showToast(`[${name}] 폴더를 만들었어요`);
+      }
+      renderLibrary();
+    };
+    return;
+  }
+  $("libSearchSection").style.display = "";
+  $("libListLabel").textContent = "저장 리스트";
+
+  // 도메인 칩 — 2개 이상일 때만 섹션 표시
+  const domainCounts = new Map();
+  for (const it of all) {
+    const d = getItemDomain(it);
+    if (d) domainCounts.set(d, (domainCounts.get(d) || 0) + 1);
+  }
+  const topDomains = [...domainCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
+  const $domainSection = $("libDomainSection");
+  if (topDomains.length < 2) {
+    $domainSection.style.display = "none";
+    libFilter.domains.clear();
+  } else {
+    $domainSection.style.display = "";
+    $libDomainChips.innerHTML = topDomains.map(([d, n]) => {
+      const brand = getBrandColor(d);
+      const initial = getDomainInitial(d);
+      return `
+        <button class="chip domain-chip ${libFilter.domains.has(d) ? 'active' : ''}" data-domain="${escapeHtml(d)}">
+          <span class="favicon-wrap" style="--brand:${brand}" data-initial="${initial}">
+            <img class="favicon" src="${faviconUrl(d)}" alt="" onerror="this.remove();this.parentElement.classList.add('fallback')">
+          </span>
+          <span>${escapeHtml(d)}</span><span class="num">${n}</span>
+        </button>
+      `;
+    }).join("");
+    $libDomainChips.querySelectorAll(".chip").forEach(el => {
       el.onclick = () => {
-        const t = el.dataset.tag;
-        if (libFilter.tags.has(t)) libFilter.tags.delete(t); else libFilter.tags.add(t);
+        const d = el.dataset.domain;
+        if (libFilter.domains.has(d)) libFilter.domains.delete(d); else libFilter.domains.add(d);
         renderLibrary();
       };
     });
+    $libDomainReset.style.display = libFilter.domains.size > 0 ? "" : "none";
   }
-  $libTagReset.style.display = libFilter.tags.size > 0 ? "" : "none";
 
   const filtered = all
     .filter(it => libFilter.category === "전체" || it._cat === libFilter.category)
-    .filter(it => libFilter.tags.size === 0 || (it.tags || []).some(t => libFilter.tags.has(t)))
-    .filter(it => matchesTitle(it, libFilter.q));
+    .filter(it => libFilter.domains.size === 0 || libFilter.domains.has(getItemDomain(it)))
+    .filter(it => matchesQuery(it, libFilter.q));
 
   $libFilteredCount.textContent = filtered.length !== all.length ? `(${filtered.length}개)` : "";
 
   if (filtered.length === 0) {
-    const isSearchMode = libFilter.q || libFilter.tags.size > 0 || libFilter.category !== "전체";
+    const isSearchMode = libFilter.q || libFilter.domains.size > 0 || libFilter.category !== "전체";
     $libCards.innerHTML = `
       <div class="empty">
         <div class="icon">${isSearchMode ? "🔎" : "📭"}</div>
@@ -1111,50 +1701,81 @@ function renderLibrary() {
     return;
   }
 
-  $libCards.innerHTML = filtered.map((item) => `
+  $libCards.innerHTML = filtered.map((item) => {
+    const domain = getItemDomain(item);
+    const brand = domain ? getBrandColor(domain) : "";
+    const initial = domain ? getDomainInitial(domain) : "";
+    const iconWrapAttrs = domain
+      ? `class="card-icon-wrap" style="--brand:${brand}" data-initial="${initial}"`
+      : `class="card-icon-wrap file"`;
+    const iconImg = domain
+      ? `<img src="${faviconUrl(domain)}" alt="" onerror="this.remove();this.parentElement.classList.add('fallback')">`
+      : "";
+    return `
     <div class="card" data-cat="${escapeHtml(item._cat)}" data-idx="${item._idx}">
-      <button class="del-btn" title="삭제">${TRASH_ICON}</button>
       <button class="copy-btn" title="복사">${COPY_ICON}</button>
-      <button class="cat-badge-btn" title="카테고리 변경">
-        ${escapeHtml(item._cat)}
-        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <a class="card-link" href="${item.url || '#'}" target="_blank" ${item.url ? '' : 'onclick="return false"'}>
-        <div class="card-title">${escapeHtml(item.title)}</div>
-        ${item.summary ? `<div class="card-desc">${escapeHtml(item.summary)}</div>` : ""}
-        ${item.memo ? `<div class="card-desc" style="color:var(--text-3)">💭 ${escapeHtml(item.memo)}</div>` : ""}
-        ${item.tags && item.tags.length ? `
-          <div class="card-tags">${item.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join("")}</div>
-        ` : ""}
-        <div class="card-meta">
-          ${item.site ? `<span class="card-site">${escapeHtml(item.site)}</span>` : ""}
-          <span>${item.savedAt}</span>
+      <button class="menu-btn" title="메뉴">${MENU_ICON}</button>
+      <div class="card-menu">
+        <button class="menu-edit">수정하기</button>
+        <button class="menu-delete danger">삭제하기</button>
+      </div>
+      <div ${iconWrapAttrs}>${iconImg}</div>
+      <div class="card-content">
+        <div class="card-top-row">
+          <button class="cat-badge-btn" title="카테고리 변경">
+            ${escapeHtml(item._cat)}
+            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <span class="card-date">${escapeHtml(item.savedAt || "")}</span>
         </div>
-      </a>
+        <div class="card-link">
+          <div class="card-title">${escapeHtml(item.title)}</div>
+          ${item.summary ? `<div class="card-desc">${escapeHtml(item.summary)}</div>` : ""}
+          ${item.tags && item.tags.length ? `
+            <div class="card-tags">${item.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join("")}</div>
+          ` : ""}
+        </div>
+      </div>
     </div>
-  `).join("");
+  `;
+  }).join("");
 
   $libCards.querySelectorAll(".card").forEach(el => {
+    const cat = el.dataset.cat;
+    const idx = parseInt(el.dataset.idx);
+
     el.addEventListener("click", (e) => {
-      if (e.target.closest("a") || e.target.closest(".del-btn") || e.target.closest(".copy-btn") || e.target.closest(".cat-badge-btn")) return;
-      renderFolder(el.dataset.cat);
-      showScreen("folder");
+      if (e.target.closest(".copy-btn") || e.target.closest(".menu-btn") ||
+          e.target.closest(".card-menu") || e.target.closest(".cat-badge-btn")) return;
+      renderDetail(cat, idx, "library");
     });
-    el.querySelector(".del-btn").onclick = async (e) => {
+
+    el.querySelector(".menu-btn").onclick = (e) => {
       e.stopPropagation();
-      if (await deleteItem(el.dataset.cat, parseInt(el.dataset.idx))) {
-        renderLibrary();
-      }
+      const menu = el.querySelector(".card-menu");
+      const isOpen = menu.classList.contains("open");
+      closeAllCardMenus();
+      if (!isOpen) menu.classList.add("open");
     };
+
+    el.querySelector(".menu-edit").onclick = (e) => {
+      e.stopPropagation();
+      closeAllCardMenus();
+      renderDetail(cat, idx, "library", { edit: true });
+    };
+
+    el.querySelector(".menu-delete").onclick = async (e) => {
+      e.stopPropagation();
+      closeAllCardMenus();
+      if (await deleteItem(cat, idx)) renderLibrary();
+    };
+
     el.querySelector(".copy-btn").onclick = async (e) => {
       e.stopPropagation();
-      const cat = el.dataset.cat;
-      const idx = parseInt(el.dataset.idx);
       const item = folders[cat]?.[idx];
       if (!item) return;
       const text = [
-        item.title,
-        item.summary,
+        item.title, item.summary,
         item.tags?.length ? item.tags.map(t => `#${t}`).join(" ") : "",
         item.url || ""
       ].filter(Boolean).join("\n");
@@ -1164,30 +1785,261 @@ function renderLibrary() {
         btn.innerHTML = CHECK_ICON;
         btn.classList.add("copied");
         showToast("복사했어요");
-        setTimeout(() => {
-          btn.innerHTML = COPY_ICON;
-          btn.classList.remove("copied");
-        }, 1500);
+        setTimeout(() => { btn.innerHTML = COPY_ICON; btn.classList.remove("copied"); }, 1500);
       } catch (err) {
         showToast("복사 실패");
       }
     };
+
     el.querySelector(".cat-badge-btn").onclick = async (e) => {
       e.stopPropagation();
-      const fromCat = el.dataset.cat;
-      const idx = parseInt(el.dataset.idx);
-      const target = await openCategoryPicker(fromCat);
-      if (!target || target === fromCat) return;
-      await moveItem(fromCat, idx, target);
+      const target = await openCategoryPicker(cat);
+      if (!target || target === cat) return;
+      await moveItem(cat, idx, target);
       renderLibrary();
     };
   });
 }
 
-$("openLibrary").onclick = () => { libFilter = { q: "", category: "전체", tags: new Set() }; $libSearch.value = ""; renderLibrary(); showScreen("library"); };
+// ── 미트볼 메뉴 ─────────────────────────────────────────
+function closeAllCardMenus() {
+  document.querySelectorAll(".card-menu.open").forEach(m => m.classList.remove("open"));
+}
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".card-menu") && !e.target.closest(".menu-btn")) {
+    closeAllCardMenus();
+  }
+});
+
+// ── 상세 화면 ───────────────────────────────────────────
+let detailCtx = null; // { category, idx, from }
+
+function renderDetail(category, idx, from, opts = {}) {
+  const item = folders[category]?.[idx];
+  if (!item) { showScreen(from === "folder" ? "folder" : "library"); return; }
+  detailCtx = { category, idx, from, editing: !!opts.edit };
+  $("detailEditBtn").style.display = opts.edit ? "none" : "";
+  $("detailDeleteBtn").style.display = opts.edit ? "" : "none";
+  if (opts.edit) renderDetailEdit(category, idx, item);
+  else renderDetailView(category, idx, item);
+  showScreen("detail");
+  window.scrollTo(0, 0);
+}
+
+function renderDetailView(category, idx, item) {
+  const domain = getItemDomain(item);
+  const $body = $("detailBody");
+  $body.innerHTML = `
+    <div class="detail-top">
+      <button class="cat-badge-btn detail-cat" title="카테고리 변경">
+        ${escapeHtml(category)}
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <span class="detail-meta">
+        ${domain ? `<img class="detail-favicon" src="${faviconUrl(domain)}" alt="" onerror="this.style.display='none'">` : ""}
+        ${escapeHtml(item.savedAt || "")}
+      </span>
+    </div>
+    <div class="detail-title-row">
+      <div class="detail-title">${escapeHtml(item.title)}</div>
+      <button class="detail-copy" title="복사">${COPY_ICON}</button>
+    </div>
+    ${item.summary ? `
+      <div class="detail-card">
+        <div class="label">요약</div>
+        <div class="body">${escapeHtml(item.summary)}</div>
+      </div>
+    ` : ""}
+    ${item.memo ? `
+      <div class="detail-card">
+        <div class="label">메모</div>
+        <div class="body">${escapeHtml(item.memo)}</div>
+      </div>
+    ` : ""}
+    ${item.tags?.length ? `<div class="detail-tags">${item.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join("")}</div>` : ""}
+    ${item.url ? `<a class="detail-link-btn" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${LINK_ICON} 원문 열기</a>` : ""}
+  `;
+  $body.querySelector(".cat-badge-btn").onclick = async () => {
+    const target = await openCategoryPicker(category);
+    if (!target || target === category) return;
+    await moveItem(category, idx, target);
+    const newIdx = (folders[target] || []).findIndex(it => it === item);
+    renderDetail(target, newIdx >= 0 ? newIdx : 0, detailCtx.from);
+  };
+  $body.querySelector(".detail-copy").onclick = async () => {
+    const text = [
+      item.title, item.summary,
+      item.tags?.length ? item.tags.map(t => `#${t}`).join(" ") : "",
+      item.url || ""
+    ].filter(Boolean).join("\n");
+    const btn = $body.querySelector(".detail-copy");
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.innerHTML = CHECK_ICON;
+      btn.classList.add("copied");
+      showToast("복사했어요");
+      setTimeout(() => { btn.innerHTML = COPY_ICON; btn.classList.remove("copied"); }, 1500);
+    } catch {
+      showToast("복사 실패");
+    }
+  };
+}
+
+function renderDetailEdit(category, idx, item) {
+  const $body = $("detailBody");
+  $body.innerHTML = `
+    <div class="edit-field">
+      <label>제목</label>
+      <input type="text" id="editTitle" value="${escapeHtml(item.title || "")}" maxlength="100">
+    </div>
+    <div class="edit-field">
+      <label>한 줄 요약</label>
+      <textarea id="editSummary" rows="2">${escapeHtml(item.summary || "")}</textarea>
+    </div>
+    <div class="edit-field">
+      <label>메모</label>
+      <textarea id="editMemo" rows="3" placeholder="저장 이유나 메모를 적어두세요">${escapeHtml(item.memo || "")}</textarea>
+    </div>
+    <div class="edit-field">
+      <label>태그</label>
+      <input type="text" id="editTags" value="${escapeHtml((item.tags || []).join(", "))}">
+      <div class="hint">쉼표(,)로 구분해 입력</div>
+    </div>
+    <button class="btn" id="editSave">저장하기</button>
+  `;
+  $("editSave").onclick = () => {
+    const newTitle = $("editTitle").value.trim();
+    if (!newTitle) { showToast("제목을 입력해 주세요"); return; }
+    item.title = newTitle;
+    item.summary = $("editSummary").value.trim();
+    item.memo = $("editMemo").value.trim();
+    item.tags = $("editTags").value.split(/[,，]/).map(t => t.trim().replace(/^#/, "")).filter(Boolean);
+    saveFolders();
+    showToast("수정했어요");
+    renderDetail(category, idx, detailCtx.from);
+  };
+}
+
+$("detailBack").onclick = () => {
+  if (detailCtx?.editing) {
+    // 편집 모드 → 해당 카드 상세(읽기) 화면으로 복귀
+    renderDetail(detailCtx.category, detailCtx.idx, detailCtx.from);
+    return;
+  }
+  if (detailCtx?.from === "folder" && folders[detailCtx.category]) {
+    renderFolder(detailCtx.category);
+    showScreen("folder");
+  } else {
+    renderLibrary();
+    showScreen("library");
+  }
+};
+$("detailEditBtn").onclick = () => {
+  if (!detailCtx) return;
+  renderDetail(detailCtx.category, detailCtx.idx, detailCtx.from, { edit: true });
+};
+$("detailDeleteBtn").onclick = async () => {
+  if (!detailCtx) return;
+  if (await deleteItem(detailCtx.category, detailCtx.idx)) {
+    if (detailCtx.from === "folder" && folders[detailCtx.category]) {
+      renderFolder(detailCtx.category);
+      showScreen("folder");
+    } else {
+      renderLibrary();
+      showScreen("library");
+    }
+  }
+};
+$("detailFab").onclick = openAddModal;
+
+$("openLibrary").onclick = () => { libFilter = { q: "", category: "전체", domains: new Set() }; $libSearch.value = ""; renderLibrary(); showScreen("library"); };
 $("libBack").onclick = () => showScreen("main");
 $libSearch.addEventListener("input", () => { libFilter.q = $libSearch.value.trim(); renderLibrary(); });
-$libTagReset.onclick = () => { libFilter.tags.clear(); renderLibrary(); };
+$libDomainReset.onclick = () => { libFilter.domains.clear(); renderLibrary(); };
+
+// ── 새 자료 추가 모달 (보관함 / 상세 FAB) ───────────────
+const $addInput = $("addInput"), $addMemo = $("addMemo"), $addGo = $("addGo");
+const $addError = $("addError"), $addMemoToggle = $("addMemoToggle"), $addMemoWrap = $("addMemoWrap");
+const ADD_MEMO_LABEL = `＋ 메모 추가하기 <span style="color:var(--text-4);font-weight:500">(선택)</span>`;
+
+let addAttachedFile = null;
+function renderAddFileChip() {
+  renderFileChipEl($("addFileChipSlot"), addAttachedFile, () => {
+    addAttachedFile = null;
+    $("addFileInput").value = "";
+    renderAddFileChip();
+  });
+}
+function setAddAttachedFile(file) {
+  if (!file) return;
+  const ext = (file.name.split(".").pop() || "").toLowerCase();
+  if (!ALLOWED_EXTS.includes(ext)) { showToast("PDF · DOCX · XLSX 파일만 올릴 수 있어요"); return; }
+  if (file.size > MAX_FILE_MB * 1024 * 1024) { showToast(`${MAX_FILE_MB}MB 이하 파일만 올릴 수 있어요`); return; }
+  addAttachedFile = file;
+  renderAddFileChip();
+}
+$("addAttachBtn").onclick = () => $("addFileInput").click();
+$("addFileInput").addEventListener("change", () => setAddAttachedFile($("addFileInput").files?.[0]));
+
+// 모달 컴포저 드래그앤드롭
+const $addComposer = $("addComposer");
+["dragenter", "dragover"].forEach(ev =>
+  $addComposer.addEventListener(ev, (e) => { e.preventDefault(); $addComposer.classList.add("dragover"); })
+);
+["dragleave", "drop"].forEach(ev =>
+  $addComposer.addEventListener(ev, (e) => {
+    e.preventDefault();
+    if (ev === "dragleave" && $addComposer.contains(e.relatedTarget)) return;
+    $addComposer.classList.remove("dragover");
+  })
+);
+$addComposer.addEventListener("drop", (e) => {
+  const f = e.dataTransfer?.files?.[0];
+  if (f) setAddAttachedFile(f);
+});
+
+// 토글 문구는 항상 고정 — 메인 화면과 동일하게
+$addMemoToggle.onclick = () => {
+  const open = $addMemoWrap.classList.toggle("open");
+  if (open) setTimeout(() => $addMemo.focus(), 0);
+};
+// 링크 입력 시 메모 영역 자동 표시, 모두 지우면 닫힘
+$addInput.addEventListener("input", () => {
+  if ($addInput.value.trim()) $addMemoWrap.classList.add("open");
+  else $addMemoWrap.classList.remove("open");
+});
+
+function openAddModal() {
+  $addInput.value = "";
+  $addMemo.value = "";
+  $addError.innerHTML = "";
+  $addMemoWrap.classList.remove("open");
+  $addMemoToggle.innerHTML = ADD_MEMO_LABEL;
+  addAttachedFile = null;
+  $("addFileInput").value = "";
+  renderAddFileChip();
+  $("addModal").classList.add("show");
+  setTimeout(() => $addInput.focus(), 0);
+}
+function closeAddModal() {
+  $("addModal").classList.remove("show");
+}
+
+$("libFab").onclick = openAddModal;
+$("addCancel").onclick = closeAddModal;
+$addGo.onclick = () => classifyAndSave({
+  rawText: $addInput.value,
+  memoText: $addMemo.value,
+  file: addAttachedFile,
+  goBtn: $addGo,
+  errorEl: $addError,
+  onSuccess: () => {
+    addAttachedFile = null;
+    $("addFileInput").value = "";
+    renderAddFileChip();
+    closeAddModal();
+  },
+});
 </script>
 
 <!-- Vercel Web Analytics (정적 사이트용) -->
