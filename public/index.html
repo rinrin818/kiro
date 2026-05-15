@@ -268,6 +268,8 @@ button,input,textarea{font-family:inherit;color:inherit}
 }
 .card-icon-wrap.file{background:var(--surface-2);color:var(--text-3)}
 .card-icon-wrap.file::before{content:"📄";font-size:20px;line-height:1}
+.card-icon-wrap.file-type{background:var(--file-color,#8b95a1)}
+.card-icon-wrap.file-type::before{content:attr(data-label);color:#fff;font-size:13px;font-weight:800;letter-spacing:-.3px}
 .card-content{flex:1;min-width:0;padding-right:60px}
 .card-link{display:block;text-decoration:none;color:inherit}
 .card-title{
@@ -860,7 +862,22 @@ function getDomainInitial(domain) {
 }
 
 function saveFolders() {
-  localStorage.setItem(FOLDERS_STORAGE, JSON.stringify(folders));
+  try {
+    localStorage.setItem(FOLDERS_STORAGE, JSON.stringify(folders));
+  } catch (e) {
+    // 용량 초과 — 원본 파일(fileData)을 비우고 재시도 (분류 결과는 유지)
+    for (const cat of Object.keys(folders)) {
+      for (const it of folders[cat]) {
+        if (it.fileData) { delete it.fileData; it.fileDataDropped = true; }
+      }
+    }
+    try {
+      localStorage.setItem(FOLDERS_STORAGE, JSON.stringify(folders));
+      showToast("저장 공간이 부족해 일부 원본 파일은 보관하지 못했어요");
+    } catch {
+      showToast("저장 공간이 부족해요");
+    }
+  }
 }
 
 function showScreen(name) {
@@ -1072,6 +1089,62 @@ function escapeHtml(str) {
 const COPY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 const CHECK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 const TRASH_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>`;
+const DOWNLOAD_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+
+// 파일 확장자별 색상 / 라벨 / MIME
+const FILE_TYPE_META = {
+  pdf:  { color: "#e2483d", label: "PDF", mime: "application/pdf" },
+  doc:  { color: "#2b6cb0", label: "DOC", mime: "application/msword" },
+  docx: { color: "#2b6cb0", label: "DOC", mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+  xls:  { color: "#1e7a4a", label: "XLS", mime: "application/vnd.ms-excel" },
+  xlsx: { color: "#1e7a4a", label: "XLS", mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+  ppt:  { color: "#d35400", label: "PPT", mime: "application/vnd.ms-powerpoint" },
+  pptx: { color: "#d35400", label: "PPT", mime: "application/vnd.openxmlformats-officedocument.presentationml.presentation" },
+};
+
+function isFileItem(item) {
+  return !item.url && !!item.fileName;
+}
+function getFileExt(item) {
+  const n = item.fileName || item.site || "";
+  return (n.split(".").pop() || "").toLowerCase();
+}
+
+// 카드 좌측 아이콘 마크업 — URL은 favicon, 파일은 확장자별 색상 배지
+function getCardIcon(item) {
+  const domain = getItemDomain(item);
+  if (domain) {
+    const brand = getBrandColor(domain);
+    const initial = getDomainInitial(domain);
+    return `<div class="card-icon-wrap" style="--brand:${brand}" data-initial="${initial}"><img src="${faviconUrl(domain)}" alt="" onerror="this.remove();this.parentElement.classList.add('fallback')"></div>`;
+  }
+  const meta = FILE_TYPE_META[getFileExt(item)];
+  if (meta) {
+    return `<div class="card-icon-wrap file-type" style="--file-color:${meta.color}" data-label="${meta.label}"></div>`;
+  }
+  return `<div class="card-icon-wrap file"></div>`;
+}
+
+// 저장된 원본 파일(base64)을 내려받기
+function downloadFile(item) {
+  if (!item.fileData) { showToast("원본 파일이 저장돼 있지 않아요"); return; }
+  try {
+    const mime = FILE_TYPE_META[getFileExt(item)]?.mime || "application/octet-stream";
+    const bin = atob(item.fileData);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    const blob = new Blob([arr], { type: mime });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = item.fileName || "document";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  } catch {
+    showToast("내려받기에 실패했어요");
+  }
+}
 const MENU_ICON = `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>`;
 const LINK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
 const FOLDER_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
@@ -1174,24 +1247,19 @@ function renderFolder(category) {
     .sort((a, b) => (b.item.savedTs || 0) - (a.item.savedTs || 0));
 
   $cards.innerHTML = sortedEntries.map(({ item, idx }) => {
-    const domain = getItemDomain(item);
-    const brand = domain ? getBrandColor(domain) : "";
-    const initial = domain ? getDomainInitial(domain) : "";
-    const iconWrapAttrs = domain
-      ? `class="card-icon-wrap" style="--brand:${brand}" data-initial="${initial}"`
-      : `class="card-icon-wrap file"`;
-    const iconImg = domain
-      ? `<img src="${faviconUrl(domain)}" alt="" onerror="this.remove();this.parentElement.classList.add('fallback')">`
-      : "";
+    const isFile = isFileItem(item);
+    const actionBtn = isFile
+      ? `<button class="copy-btn" data-idx="${idx}" title="내려받기">${DOWNLOAD_ICON}</button>`
+      : `<button class="copy-btn" data-idx="${idx}" title="복사">${COPY_ICON}</button>`;
     return `
     <div class="card" data-idx="${idx}">
-      <button class="copy-btn" data-idx="${idx}" title="복사">${COPY_ICON}</button>
+      ${actionBtn}
       <button class="menu-btn" data-idx="${idx}" title="메뉴">${MENU_ICON}</button>
       <div class="card-menu" data-idx="${idx}">
         <button class="menu-edit">수정하기</button>
         <button class="menu-delete danger">삭제하기</button>
       </div>
-      <div ${iconWrapAttrs}>${iconImg}</div>
+      ${getCardIcon(item)}
       <div class="card-content">
         <div class="card-top-row">
           <button class="cat-badge-btn" data-idx="${idx}" title="카테고리 변경">
@@ -1258,6 +1326,7 @@ function renderFolder(category) {
     el.querySelector(".copy-btn").onclick = async (e) => {
       e.stopPropagation();
       const item = folders[currentCategory][idx];
+      if (isFileItem(item)) { downloadFile(item); return; }
       const text = [
         item.title, item.summary,
         item.tags?.length ? item.tags.map(t => `#${t}`).join(" ") : "",
@@ -1459,7 +1528,7 @@ async function classifyAndSave({ rawText, memoText, file, goBtn, errorEl, onSucc
       const stopLoading = startStageLoading(goBtn, { isFile: true });
       try {
         const fileData = await fileToBase64(file);
-        const baseItem = { url: "", title: "", site: file.name, savedAt: today, savedTs: Date.now(), memo: parsed.memo };
+        const baseItem = { url: "", title: file.name, site: file.name, savedAt: today, savedTs: Date.now(), memo: parsed.memo, fileName: file.name, fileData };
         const r = await classifyOne({
           classifyInput: parsed.memo || "",
           baseItem,
@@ -1709,24 +1778,19 @@ function renderLibrary() {
   }
 
   $libCards.innerHTML = filtered.map((item) => {
-    const domain = getItemDomain(item);
-    const brand = domain ? getBrandColor(domain) : "";
-    const initial = domain ? getDomainInitial(domain) : "";
-    const iconWrapAttrs = domain
-      ? `class="card-icon-wrap" style="--brand:${brand}" data-initial="${initial}"`
-      : `class="card-icon-wrap file"`;
-    const iconImg = domain
-      ? `<img src="${faviconUrl(domain)}" alt="" onerror="this.remove();this.parentElement.classList.add('fallback')">`
-      : "";
+    const isFile = isFileItem(item);
+    const actionBtn = isFile
+      ? `<button class="copy-btn" title="내려받기">${DOWNLOAD_ICON}</button>`
+      : `<button class="copy-btn" title="복사">${COPY_ICON}</button>`;
     return `
     <div class="card" data-cat="${escapeHtml(item._cat)}" data-idx="${item._idx}">
-      <button class="copy-btn" title="복사">${COPY_ICON}</button>
+      ${actionBtn}
       <button class="menu-btn" title="메뉴">${MENU_ICON}</button>
       <div class="card-menu">
         <button class="menu-edit">수정하기</button>
         <button class="menu-delete danger">삭제하기</button>
       </div>
-      <div ${iconWrapAttrs}>${iconImg}</div>
+      ${getCardIcon(item)}
       <div class="card-content">
         <div class="card-top-row">
           <button class="cat-badge-btn" title="카테고리 변경">
@@ -1781,6 +1845,7 @@ function renderLibrary() {
       e.stopPropagation();
       const item = folders[cat]?.[idx];
       if (!item) return;
+      if (isFileItem(item)) { downloadFile(item); return; }
       const text = [
         item.title, item.summary,
         item.tags?.length ? item.tags.map(t => `#${t}`).join(" ") : "",
@@ -1849,7 +1914,9 @@ function renderDetailView(category, idx, item) {
     </div>
     <div class="detail-title-row">
       <div class="detail-title">${escapeHtml(item.title)}</div>
-      <button class="detail-copy" title="복사">${COPY_ICON}</button>
+      ${isFileItem(item)
+        ? `<button class="detail-copy" title="내려받기">${DOWNLOAD_ICON}</button>`
+        : `<button class="detail-copy" title="복사">${COPY_ICON}</button>`}
     </div>
     ${item.summary ? `
       <div class="detail-card">
@@ -1874,6 +1941,7 @@ function renderDetailView(category, idx, item) {
     renderDetail(target, newIdx >= 0 ? newIdx : 0, detailCtx.from);
   };
   $body.querySelector(".detail-copy").onclick = async () => {
+    if (isFileItem(item)) { downloadFile(item); return; }
     const text = [
       item.title, item.summary,
       item.tags?.length ? item.tags.map(t => `#${t}`).join(" ") : "",
