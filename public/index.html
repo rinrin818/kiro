@@ -1164,7 +1164,7 @@ function openCategoryPicker(currentCat) {
     const newBtn = $("mpNew"), newWrap = $("mpNewWrap"), newInput = $("mpNewInput"), newConfirm = $("mpNewConfirm");
     const cancel = $("mpCancel");
 
-    const cats = [...new Set([currentCat, ...Object.keys(folders)])].filter(Boolean);
+    const cats = [...new Set([currentCat, ...folderList, ...Object.keys(folders)])].filter(Boolean);
     list.innerHTML = cats.map(c => `
       <button class="mp-option ${c === currentCat ? 'current' : ''}" data-cat="${escapeHtml(c)}">
         <span class="mp-radio">${c === currentCat ? '●' : '○'}</span>
