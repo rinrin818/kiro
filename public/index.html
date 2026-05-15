@@ -1168,7 +1168,12 @@ function renderFolder(category) {
     return;
   }
 
-  $cards.innerHTML = items.map((item, idx) => {
+  // 원본 인덱스를 보존하면서 저장 시각 최신순으로 정렬
+  const sortedEntries = items
+    .map((item, idx) => ({ item, idx }))
+    .sort((a, b) => (b.item.savedTs || 0) - (a.item.savedTs || 0));
+
+  $cards.innerHTML = sortedEntries.map(({ item, idx }) => {
     const domain = getItemDomain(item);
     const brand = domain ? getBrandColor(domain) : "";
     const initial = domain ? getDomainInitial(domain) : "";
@@ -1454,7 +1459,7 @@ async function classifyAndSave({ rawText, memoText, file, goBtn, errorEl, onSucc
       const stopLoading = startStageLoading(goBtn, { isFile: true });
       try {
         const fileData = await fileToBase64(file);
-        const baseItem = { url: "", title: "", site: file.name, savedAt: today, memo: parsed.memo };
+        const baseItem = { url: "", title: "", site: file.name, savedAt: today, savedTs: Date.now(), memo: parsed.memo };
         const r = await classifyOne({
           classifyInput: parsed.memo || "",
           baseItem,
@@ -1510,6 +1515,7 @@ async function classifyAndSave({ rawText, memoText, file, goBtn, errorEl, onSucc
           title: og?.title || domain || url,
           site: og?.siteName || domain || "",
           savedAt: today,
+          savedTs: Date.now(),
           memo: parsed.memo,
         };
         const r = await classifyOne({ classifyInput: parts.join("\n"), baseItem });
@@ -1686,7 +1692,8 @@ function renderLibrary() {
   const filtered = all
     .filter(it => libFilter.category === "전체" || it._cat === libFilter.category)
     .filter(it => libFilter.domains.size === 0 || libFilter.domains.has(getItemDomain(it)))
-    .filter(it => matchesQuery(it, libFilter.q));
+    .filter(it => matchesQuery(it, libFilter.q))
+    .sort((a, b) => (b.savedTs || 0) - (a.savedTs || 0));
 
   $libFilteredCount.textContent = filtered.length !== all.length ? `(${filtered.length}개)` : "";
 
